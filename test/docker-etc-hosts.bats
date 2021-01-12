@@ -1,7 +1,7 @@
 #!/usr/bin/env ./libs/bats/bin/bats
 load '../docker-etc-hosts.sh'
 
-@test "get_all_containers returns names and ip addresses" {
+@test "get_all_containers returns a single name and ip address" {
 
   local container_id; container_id=$(random_hex_id)
   create_docker_container "hardcore_vaughan" "172.17.0.3" "$container_id"
@@ -9,6 +9,19 @@ load '../docker-etc-hosts.sh'
   local output; output="$(get_all_containers)"
 
   assert_equals "$output" "/hardcore_vaughan $container_id 172.17.0.3 $default_bridge_network_id"
+}
+
+@test "get_all_containers returns multiple names and ip addresses" {
+
+  local container_id_1; container_id_1=$(random_hex_id)
+  create_docker_container "container_one" "172.17.0.2" "$container_id_1"
+  local container_id_2; container_id_2=$(random_hex_id)
+  create_docker_container "container_two" "172.17.0.3" "$container_id_2"
+
+  local output; output="$(get_all_containers)"
+
+  assert_equals "$output" "/container_one $container_id_1 172.17.0.2 $default_bridge_network_id
+/container_two $container_id_2 172.17.0.3 $default_bridge_network_id"
 }
 
 random_hex_id() {
@@ -49,20 +62,17 @@ docker_ps_aq() {
 
 docker_inspect() {
   local format="$1"
-  local id="$2"
+  shift
+  local ids=("$@")
 
-  for container in "${docker_containers[@]}"; do
-    IFS=' ' read -r name ip network_id container_id <<< "$container"
-    if [ "$id" = "${container_id:0:12}" ]; then
-      echo "/$name $container_id $ip $network_id"
-    fi
+  for id in "${ids[@]}"; do
+    for container in "${docker_containers[@]}"; do
+      IFS=' ' read -r name ip network_id container_id <<< "$container"
+      if [ "$id" = "${container_id:0:12}" ]; then
+        echo "/$name $container_id $ip $network_id"
+      fi
+    done
   done
-
-#  if [ "$1" = "inspect --format={{.Name}} {{range .NetworkSettings.Networks}}{{.IPAddress}} {{.NetworkID}}{{end}} 05178994c37d" ]; then
-#    echo '/hardcore_vaughan 172.17.0.3 c11d10006ca6e45b73c514acb6ca1bdc99a080cdfd29650cf4dd334053936912'
-#  else
-#    echo "Unknown: $*"
-#  fi
 }
 
 assert_equals() {

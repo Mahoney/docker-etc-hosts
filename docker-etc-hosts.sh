@@ -11,6 +11,8 @@ main() {
 }
 
 get_all_containers() {
+  # we want docker ps -aq to be expanded
+  # shellcheck disable=SC2046
   docker inspect --format='{{.Name}} {{.Id}} {{range .NetworkSettings.Networks}}{{.IPAddress}} {{.NetworkID}}{{end}}' $(docker ps -aq)
 }
 
