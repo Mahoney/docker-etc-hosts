@@ -11,7 +11,7 @@ main() {
 }
 
 get_all_containers() {
-  docker inspect --format='{{.Name}} {{range .NetworkSettings.Networks}}{{.IPAddress}} {{.NetworkID}}{{end}}' $(docker ps -aq)
+  docker inspect --format='{{.Name}} {{.Id}} {{range .NetworkSettings.Networks}}{{.IPAddress}} {{.NetworkID}}{{end}}' $(docker ps -aq)
 }
 
 log() {
