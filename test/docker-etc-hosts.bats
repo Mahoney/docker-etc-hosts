@@ -42,15 +42,21 @@ create_docker_container() {
 }
 
 docker() {
-  if [ "$*" = 'ps -aq' ]; then
-    docker_ps_aq
-  elif [ "$1" = "inspect" ]; then
-    shift
-    docker_inspect "$@"
-  else
-    echo "Unknown: $*"
-    return 1
-  fi
+  local command=$1
+  shift
+
+  case $command in
+    ps)
+      docker_ps_aq "$@"
+    ;;
+    inspect)
+      docker_inspect "$@"
+    ;;
+    *)
+      echo "Unknown command: $command"
+      return 1
+    ;;
+  esac
 }
 
 docker_ps_aq() {
