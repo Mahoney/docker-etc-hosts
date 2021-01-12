@@ -10,6 +10,10 @@ main() {
   log 'I ran'
 }
 
+get_all_containers() {
+  docker inspect --format='{{.Name}} {{range .NetworkSettings.Networks}}{{.IPAddress}} {{.NetworkID}}{{end}}' $(docker ps -aq)
+}
+
 log() {
   echo "$(date +%Y-%d-%mT%H:%M:%S\ %Z) $1"
 }
