@@ -46,16 +46,9 @@ docker() {
   shift
 
   case $command in
-    ps)
-      docker_ps_aq "$@"
-    ;;
-    inspect)
-      docker_inspect "$@"
-    ;;
-    *)
-      echo "Unknown command: $command"
-      return 1
-    ;;
+    ps)      docker_ps_aq "$@" ;;
+    inspect) docker_inspect "$@" ;;
+    *)       echo "Unknown command: $command"; return 1 ;;
   esac
 }
 
