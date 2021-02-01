@@ -26,13 +26,15 @@ get_all_containers() {
   local compose_number_var='{{$compose_number := index .Config.Labels "com.docker.compose.container-number"}}'
 
   # shellcheck disable=SC2016
-  local network_vars='{{$ip_address := .IPAddress}}{{$network_id := .NetworkID}}'
+  local ip_address_var='{{$ip_address := .IPAddress}}'
+  # shellcheck disable=SC2016
+  local network_id_var='{{$network_id := .NetworkID}}'
 
   # shellcheck disable=SC2016
   local entry='{{$name}}|{{$container_id}}|{{$ip_address}}|{{$network_name}}|{{$network_id}}|{{$compose_project}}|{{$compose_service}}|{{$compose_number}}'
 
   # shellcheck disable=SC2016
-  local per_network="$network_vars""$entry"'{{printf "\n"}}'
+  local per_network="$ip_address_var""$network_id_var""$entry"'{{printf "\n"}}'
 
   # shellcheck disable=SC2016
   local network_loop='{{range $network_name, $value := .NetworkSettings.Networks}}'"$per_network"'{{end}}'
