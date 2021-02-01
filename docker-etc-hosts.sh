@@ -41,9 +41,8 @@ get_all_containers() {
 
 join_vars_with_separator() {
   local separator=$1
-  local var_names=("${@:2}")
   vars=()
-  while IFS='' read -r line; do vars+=("$line"); done < <(surround '{{$' '}}' "${var_names[@]}")
+  while IFS='' read -r line; do vars+=("$line"); done < <(surround '{{$' '}}' "${@:2}")
   local joined; IFS="$separator" joined="${vars[*]}"
   echo "$joined"
 }
