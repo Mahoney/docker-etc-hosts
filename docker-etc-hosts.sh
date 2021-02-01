@@ -31,7 +31,6 @@ get_all_containers() {
   local network_loop='{{range $network_name, $value := .NetworkSettings.Networks}}'"$per_network"'{{end}}'
 
   local format_template="$name_var""$id_var""$compose_project_var""$compose_service_var""$compose_number_var""$network_loop"
-
   # we want docker ps -q to be expanded
   # shellcheck disable=SC2046
   docker inspect \
@@ -42,9 +41,20 @@ get_all_containers() {
 
 join_vars_with_separator() {
   local separator=$1
-  shift
-  local joined; joined=$(echo "$@" | sed "s/ /}}$separator{{$/g")
-  echo '{{$'"$joined"'}}'
+  local var_names=("${@:2}")
+  vars=()
+  while IFS='' read -r line; do vars+=("$line"); done < <(surround '{{$' '}}' "${var_names[@]}")
+  local joined; IFS="$separator" joined="${vars[*]}"
+  echo "$joined"
+}
+
+surround() {
+  local prefix=$1
+  local suffix=$2
+  local to_surround=("${@:3}")
+  local result=("${to_surround[@]/#/"$prefix"}")
+  result=("${result[@]/%/"$suffix"}")
+  echo "${result[*]}"
 }
 
 var_exp() {
