@@ -12,10 +12,37 @@ main() {
 }
 
 get_all_containers() {
-  # we want docker ps -aq to be expanded
+
+  # shellcheck disable=SC2016
+  local name_var='{{$name := .Name}}'
+  # shellcheck disable=SC2016
+  local id_var='{{$container_id := .Id}}'
+
+  # shellcheck disable=SC2016
+  local compose_project_var='{{$compose_project := index .Config.Labels "com.docker.compose.project"}}'
+  # shellcheck disable=SC2016
+  local compose_service_var='{{$compose_service := index .Config.Labels "com.docker.compose.service"}}'
+  # shellcheck disable=SC2016
+  local compose_number_var='{{$compose_number := index .Config.Labels "com.docker.compose.container-number"}}'
+
+  # shellcheck disable=SC2016
+  local network_vars='{{$ip_address := .IPAddress}}{{$network_id := .NetworkID}}'
+
+  # shellcheck disable=SC2016
+  local entry='{{$name}}|{{$container_id}}|{{$ip_address}}|{{$network_name}}|{{$network_id}}|{{$compose_project}}|{{$compose_service}}|{{$compose_number}}'
+
+  # shellcheck disable=SC2016
+  local per_network="$network_vars""$entry"'{{printf "\n"}}'
+
+  # shellcheck disable=SC2016
+  local network_loop='{{range $network_name, $value := .NetworkSettings.Networks}}'"$per_network"'{{end}}'
+
+  local format_template="$name_var""$id_var""$compose_project_var""$compose_service_var""$compose_number_var""$network_loop"
+
+  # we want docker ps -q to be expanded
   # shellcheck disable=SC2046
   docker inspect \
-    --format='{{$service := index .Config.Labels "com.docker.compose.service"}}{{$name := .Name}}{{$container_id := .Id}}{{range $network_name, $value := .NetworkSettings.Networks}}{{$ip_address := .IPAddress}}{{$network_id := .NetworkID}}{{$name}}|{{$container_id}}|{{$ip_address}}|{{$network_name}}|{{$network_id}}|{{$service}}{{printf "\n"}}{{end}}' \
+    --format="$format_template" \
     $(docker ps -q $(all_docker_bridge_networks_as_filter)) \
     | sed '/^$/d'
 }
