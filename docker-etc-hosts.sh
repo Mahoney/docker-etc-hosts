@@ -1,19 +1,27 @@
 #! /usr/bin/env bash
 
-# Set home so docker doesn't moan
-export HOME="${HOME:-/var/root}"
-
 main() {
   set -euo pipefail
   IFS=$'\n\t'
 
+  # Set home so docker doesn't moan
+  export HOME="${HOME:-/var/root}"
+
   log 'I ran'
+  get_all_containers
 }
 
 get_all_containers() {
   # we want docker ps -aq to be expanded
   # shellcheck disable=SC2046
-  docker inspect --format='{{.Name}} {{.Id}} {{range .NetworkSettings.Networks}}{{.IPAddress}} {{.NetworkID}}{{end}}' $(docker ps -aq)
+  docker inspect \
+    --format='{{$name := .Name}}{{$container_id := .Id}}{{range $network_name, $value := .NetworkSettings.Networks}}{{$ip_address := .IPAddress}}{{$network_id := .NetworkID}}{{$name}}|{{$container_id}}|{{$ip_address}}|{{$network_name}}|{{$network_id}}{{printf "\n"}}{{range $alias := .Aliases}}{{$alias}}|{{$container_id}}|{{$ip_address}}|{{$network_name}}|{{$network_id}}{{printf "\n"}}{{end}}{{end}}' \
+    $(docker ps -q $(all_docker_bridge_networks_as_filter)) \
+    | sed '/^$/d'
+}
+
+all_docker_bridge_networks_as_filter() {
+  docker network ls --filter 'driver=bridge' --format '--filter=network={{.ID}}'
 }
 
 log() {
