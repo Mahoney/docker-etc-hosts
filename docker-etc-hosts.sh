@@ -19,11 +19,11 @@ get_all_containers() {
   local id_var='{{$container_id := .Id}}'
 
   # shellcheck disable=SC2016
-  local compose_project_var='{{$compose_project := index .Config.Labels "com.docker.compose.project"}}'
+  local compose_project_var='{{$compose_project := "" | or (index .Config.Labels "com.docker.compose.project")}}'
   # shellcheck disable=SC2016
-  local compose_service_var='{{$compose_service := index .Config.Labels "com.docker.compose.service"}}'
+  local compose_service_var='{{$compose_service := "" | or (index .Config.Labels "com.docker.compose.service")}}'
   # shellcheck disable=SC2016
-  local compose_number_var='{{$compose_number := index .Config.Labels "com.docker.compose.container-number"}}'
+  local compose_number_var='{{$compose_number := "" | or (index .Config.Labels "com.docker.compose.container-number")}}'
 
   # shellcheck disable=SC2016
   local ip_address_var='{{$ip_address := .IPAddress}}'
