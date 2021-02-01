@@ -15,7 +15,7 @@ get_all_containers() {
   # we want docker ps -aq to be expanded
   # shellcheck disable=SC2046
   docker inspect \
-    --format='{{$name := .Name}}{{$container_id := .Id}}{{range $network_name, $value := .NetworkSettings.Networks}}{{$ip_address := .IPAddress}}{{$network_id := .NetworkID}}{{$name}}|{{$container_id}}|{{$ip_address}}|{{$network_name}}|{{$network_id}}{{printf "\n"}}{{range $alias := .Aliases}}{{$alias}}|{{$container_id}}|{{$ip_address}}|{{$network_name}}|{{$network_id}}{{printf "\n"}}{{end}}{{end}}' \
+    --format='{{$service := index .Config.Labels "com.docker.compose.service"}}{{$name := .Name}}{{$container_id := .Id}}{{range $network_name, $value := .NetworkSettings.Networks}}{{$ip_address := .IPAddress}}{{$network_id := .NetworkID}}{{$name}}|{{$container_id}}|{{$ip_address}}|{{$network_name}}|{{$network_id}}|{{$service}}{{printf "\n"}}{{end}}' \
     $(docker ps -q $(all_docker_bridge_networks_as_filter)) \
     | sed '/^$/d'
 }
