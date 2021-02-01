@@ -13,7 +13,6 @@ main() {
 
 get_all_containers() {
 
-  # shellcheck disable=SC2016
   local name_var; name_var=$(var_exp 'name' '.Name')
   local id_var; id_var=$(var_exp 'container_id' '.Id')
 
@@ -24,10 +23,8 @@ get_all_containers() {
   local ip_address_var; ip_address_var=$(var_exp 'ip_address' '.IPAddress')
   local network_id_var; network_id_var=$(var_exp 'network_id' '.NetworkID')
 
-  # shellcheck disable=SC2016
-  local entry='{{$name}}|{{$container_id}}|{{$ip_address}}|{{$network_name}}|{{$network_id}}|{{$compose_project}}|{{$compose_service}}|{{$compose_number}}'
+  local entry; entry=$(join_vars_with_separator '|' 'name' 'container_id' 'ip_address' 'network_name' 'network_id' 'compose_project' 'compose_service' 'compose_number')
 
-  # shellcheck disable=SC2016
   local per_network="$ip_address_var""$network_id_var""$entry"'{{printf "\n"}}'
 
   # shellcheck disable=SC2016
@@ -41,6 +38,13 @@ get_all_containers() {
     --format="$format_template" \
     $(docker ps -q $(all_docker_bridge_networks_as_filter)) \
     | sed '/^$/d'
+}
+
+join_vars_with_separator() {
+  local separator=$1
+  shift
+  local joined; joined=$(echo "$@" | sed "s/ /}}$separator{{$/g")
+  echo '{{$'"$joined"'}}'
 }
 
 var_exp() {
