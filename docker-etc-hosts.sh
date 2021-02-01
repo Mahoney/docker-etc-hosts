@@ -18,12 +18,9 @@ get_all_containers() {
   # shellcheck disable=SC2016
   local id_var='{{$container_id := .Id}}'
 
-  # shellcheck disable=SC2016
-  local compose_project_var='{{$compose_project := "" | or (index .Config.Labels "com.docker.compose.project")}}'
-  # shellcheck disable=SC2016
-  local compose_service_var='{{$compose_service := "" | or (index .Config.Labels "com.docker.compose.service")}}'
-  # shellcheck disable=SC2016
-  local compose_number_var='{{$compose_number := "" | or (index .Config.Labels "com.docker.compose.container-number")}}'
+  local compose_project_var; compose_project_var=$(label_var_default_empty_string 'compose_project' 'com.docker.compose.project')
+  local compose_service_var; compose_service_var=$(label_var_default_empty_string 'compose_service' 'com.docker.compose.service')
+  local compose_number_var; compose_number_var=$(label_var_default_empty_string 'compose_number' 'com.docker.compose.container-number')
 
   # shellcheck disable=SC2016
   local ip_address_var='{{$ip_address := .IPAddress}}'
@@ -47,6 +44,25 @@ get_all_containers() {
     --format="$format_template" \
     $(docker ps -q $(all_docker_bridge_networks_as_filter)) \
     | sed '/^$/d'
+}
+
+label_var_default_empty_string() {
+  local var_name=$1
+  local label=$2
+  local label_expr; label_expr="$(label_expression "$label")"
+
+  go_template_var_default_empty_string "$var_name" "$label_expr"
+}
+
+go_template_var_default_empty_string() {
+  local var_name=$1
+  local expression=$2
+  echo '{{$'"$var_name"' := "" | or ('"$expression"')}}'
+}
+
+label_expression() {
+  local label=$1
+  echo "index .Config.Labels \"$label\""
 }
 
 all_docker_bridge_networks_as_filter() {
