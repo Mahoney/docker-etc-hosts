@@ -1,6 +1,58 @@
 #!/usr/bin/env ./libs/bats/bin/bats
 load '../docker-etc-hosts.sh'
 
+@test "sanitise a a" {
+  assert_equals "$(sanitise 'a')" 'a'
+}
+@test "sanitise A a" {
+  assert_equals "$(sanitise 'A')" 'a'
+}
+@test "sanitise ab ab" {
+  assert_equals "$(sanitise 'ab')" 'ab'
+}
+@test "sanitise aa aa" {
+  assert_equals "$(sanitise 'aa')" 'aa'
+}
+@test "sanitise a-a a-a" {
+  assert_equals "$(sanitise 'a-a')" 'a-a'
+}
+@test "sanitise a.a a.a" {
+  assert_equals "$(sanitise 'a.a')" 'a.a'
+}
+@test "sanitise a..a a.a" {
+  assert_equals "$(sanitise 'a..a')" 'a.a'
+}
+@test "sanitise _a a" {
+  assert_equals "$(sanitise '_a')" 'a'
+}
+@test "sanitise a_ a" {
+  assert_equals "$(sanitise 'a_')" 'a'
+}
+@test "sanitise .a a" {
+  assert_equals "$(sanitise '.a')" 'a'
+}
+@test "sanitise a. a" {
+  assert_equals "$(sanitise 'a.')" 'a'
+}
+@test "sanitise /a a" {
+  assert_equals "$(sanitise '/a')" 'a'
+}
+@test "sanitise a/ a" {
+  assert_equals "$(sanitise 'a/')" 'a'
+}
+@test "sanitise -a a" {
+  assert_equals "$(sanitise '-a')" 'a'
+}
+@test "sanitise a- a" {
+  assert_equals "$(sanitise 'a-')" 'a'
+}
+@test "sanitise a_a a-a" {
+  assert_equals "$(sanitise 'a_a')" 'a-a'
+}
+@test "sanitise a__a a-a" {
+  assert_equals "$(sanitise 'a__a')" 'a-a'
+}
+
 @test "get_all_containers returns a single name and ip address" {
 
   local container_id; container_id=$(random_hex_id)
@@ -8,7 +60,7 @@ load '../docker-etc-hosts.sh'
 
   local output; output="$(get_all_containers)"
 
-  assert_equals "$output" "/hardcore_vaughan $container_id 172.17.0.3 $default_bridge_network_id"
+  assert_equals "$output" "/hardcore_vaughan|$container_id|172.17.0.3|$default_bridge_network_id"
 }
 
 @test "get_all_containers returns multiple names and ip addresses" {
@@ -20,8 +72,8 @@ load '../docker-etc-hosts.sh'
 
   local output; output="$(get_all_containers)"
 
-  assert_equals "$output" "/container_one $container_id_1 172.17.0.2 $default_bridge_network_id
-/container_two $container_id_2 172.17.0.3 $default_bridge_network_id"
+  assert_equals "$output" "/container_one|$container_id_1|172.17.0.2|$default_bridge_network_id
+/container_two|$container_id_2|172.17.0.3|$default_bridge_network_id"
 }
 
 random_hex_id() {
@@ -68,7 +120,7 @@ docker_inspect() {
     for container in "${docker_containers[@]}"; do
       IFS=' ' read -r name ip network_id container_id <<< "$container"
       if [ "$id" = "${container_id:0:12}" ]; then
-        echo "/$name $container_id $ip $network_id"
+        echo "/$name|$container_id|$ip|$network_id"
       fi
     done
   done
