@@ -28,7 +28,7 @@ synchronize_etc_hosts() {
   local etc_hosts_hash_at_start; etc_hosts_hash_at_start=$(md5sum "/etc/hosts")
   cp /etc/hosts "$altered_etc_hosts"
 
-  local etc_host_entries=$(get_etc_host_entries | sort)
+  local etc_host_entries; etc_host_entries=$(get_etc_host_entries | sort)
   {
     echo "## START added by docker-etc-hosts"
     echo "$etc_host_entries"
@@ -37,10 +37,8 @@ synchronize_etc_hosts() {
 
   local etc_hosts_hash_now; etc_hosts_hash_now=$(md5sum "/etc/hosts")
   if [ "$etc_hosts_hash_now" = "$etc_hosts_hash_at_start" ]; then
-    sudo cp "$altered_etc_hosts" /etc/hosts
+    sudo mv "$altered_etc_hosts" /etc/hosts
   else
-    echo "$etc_hosts_hash_now != $etc_hosts_hash_at_start"
-    ls -l /etc/hosts
     synchronize_etc_hosts
   fi
 }
