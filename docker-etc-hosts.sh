@@ -24,22 +24,18 @@ synchronize_etc_hosts_as_containers_start_and_stop() {
 
 synchronize_etc_hosts() {
 
-  local altered_etc_hosts
-  altered_etc_hosts=$(mktemp)
-  local etc_hosts_hash_at_start
-  etc_hosts_hash_at_start=$(md5sum "/etc/hosts")
+  local altered_etc_hosts; altered_etc_hosts=$(mktemp)
+  local etc_hosts_hash_at_start; etc_hosts_hash_at_start=$(md5sum "/etc/hosts")
   cp /etc/hosts "$altered_etc_hosts"
 
-  local etc_host_entries
-  etc_host_entries=$(get_etc_host_entries | sort)
+  local etc_host_entries=$(get_etc_host_entries | sort)
   {
     echo "## START added by docker-etc-hosts"
     echo "$etc_host_entries"
     echo "## END added by docker-etc-hosts"
   } >>"$altered_etc_hosts"
 
-  local etc_hosts_hash_now
-  etc_hosts_hash_now=$(md5sum "/etc/hosts")
+  local etc_hosts_hash_now; etc_hosts_hash_now=$(md5sum "/etc/hosts")
   if [ "$etc_hosts_hash_now" = "$etc_hosts_hash_at_start" ]; then
     sudo cp "$altered_etc_hosts" /etc/hosts
   else
