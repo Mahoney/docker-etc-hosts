@@ -15,7 +15,7 @@ get_etc_host_entries() {
   declare -A etc_hosts
 
   while read -r container_and_ip; do
-    IFS='|' read -r compose_project compose_service compose_number name ip_address network_name <<< "$container_and_ip"
+    IFS='|' read -r compose_project compose_service compose_number name ip_address network_name <<<"$container_and_ip"
 
     if [ -z "$compose_project" ]; then
       local sanitised_name; sanitised_name=$(sanitise "$name")
@@ -44,10 +44,10 @@ get_all_containers() {
   # we want docker ps -q to be expanded
   # shellcheck disable=SC2046
   docker inspect \
-      --format="$(format_template)" \
-      $(docker ps -q $(all_docker_bridge_networks_as_filter)) \
-      | sed '/^$/d' \
-      | sort
+    --format="$(format_template)" \
+    $(docker ps -q $(all_docker_bridge_networks_as_filter)) |
+    sed '/^$/d' |
+    sort
 }
 
 sanitise() {
