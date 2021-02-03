@@ -24,15 +24,19 @@ synchronize_etc_hosts_as_containers_start_and_stop() {
 
 synchronize_etc_hosts() {
 
+  readonly section_name="added by docker-etc-hosts"
+  readonly section_start="## START $section_name"
+  readonly section_end="## END $section_name"
+
   local altered_etc_hosts; altered_etc_hosts=$(mktemp)
   local etc_hosts_hash_at_start; etc_hosts_hash_at_start=$(md5sum "/etc/hosts")
-  cp /etc/hosts "$altered_etc_hosts"
+  sed "/^$section_start/,/^$section_end/d" /etc/hosts > "$altered_etc_hosts"
 
   local etc_host_entries; etc_host_entries=$(get_etc_host_entries | sort)
   {
-    echo "## START added by docker-etc-hosts"
+    echo "$section_start"
     echo "$etc_host_entries"
-    echo "## END added by docker-etc-hosts"
+    echo "$section_end"
   } >>"$altered_etc_hosts"
 
   local etc_hosts_hash_now; etc_hosts_hash_now=$(md5sum "/etc/hosts")
