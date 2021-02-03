@@ -28,5 +28,5 @@ jobs:
       - name: Run macOS tests
         run: |
           brew uninstall bats
-          brew install bats-core
+          brew install bats-core bash coreutils
           bats test
