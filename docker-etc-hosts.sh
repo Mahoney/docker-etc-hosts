@@ -14,7 +14,8 @@ main() {
 synchronize_etc_hosts_as_containers_start_and_stop() {
   docker events \
     --filter 'type=container' \
-    --filter 'event=create' \
+    --filter 'event=start' \
+    --filter 'event=stop' \
     --filter 'event=destroy' |
     while read -r _; do
       synchronize_etc_hosts
