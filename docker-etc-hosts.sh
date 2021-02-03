@@ -24,9 +24,9 @@ synchronize_etc_hosts_as_containers_start_and_stop() {
 
 synchronize_etc_hosts() {
 
-  readonly section_name="added by docker-etc-hosts"
-  readonly section_start="## START $section_name"
-  readonly section_end="## END $section_name"
+  local section_name="added by docker-etc-hosts"
+  local section_start="## START $section_name"
+  local section_end="## END $section_name"
 
   local altered_etc_hosts; altered_etc_hosts=$(mktemp)
   local etc_hosts_hash_at_start; etc_hosts_hash_at_start=$(md5sum "/etc/hosts")
@@ -41,7 +41,8 @@ synchronize_etc_hosts() {
 
   local etc_hosts_hash_now; etc_hosts_hash_now=$(md5sum "/etc/hosts")
   if [ "$etc_hosts_hash_now" = "$etc_hosts_hash_at_start" ]; then
-    sudo mv "$altered_etc_hosts" /etc/hosts
+    sudo cp "$altered_etc_hosts" /etc/hosts
+    rm "$altered_etc_hosts"
   else
     synchronize_etc_hosts
   fi
