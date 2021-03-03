@@ -15,8 +15,7 @@ synchronize_etc_hosts_as_containers_start_and_stop() {
   docker events \
     --filter 'type=container' \
     --filter 'event=start' \
-    --filter 'event=stop' \
-    --filter 'event=destroy' |
+    --filter 'event=die' |
     while read -r _; do
       synchronize_etc_hosts
     done
@@ -39,6 +38,8 @@ synchronize_etc_hosts() {
     echo "$section_end"
   } >>"$altered_etc_hosts"
 
+  # Yes, this is check then act... if you know a way to atomically do this
+  # commit in bash please tell me
   local etc_hosts_hash_now; etc_hosts_hash_now=$(md5sum "/etc/hosts")
   if [ "$etc_hosts_hash_now" = "$etc_hosts_hash_at_start" ]; then
     sudo cp "$altered_etc_hosts" /etc/hosts
