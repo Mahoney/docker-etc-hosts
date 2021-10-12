@@ -11,6 +11,14 @@ main() {
   synchronize_etc_hosts
 }
 
+log() {
+  echo "$(date +%Y-%m-%dT%H:%M:%S%Z) $1"
+}
+
+error() {
+  log >&2 "$1"
+}
+
 synchronize_etc_hosts_as_containers_start_and_stop() {
   docker events \
     --filter 'type=container' \
@@ -19,6 +27,7 @@ synchronize_etc_hosts_as_containers_start_and_stop() {
     while read -r _; do
       synchronize_etc_hosts
     done
+  log "docker-etc-hosts exiting - docker container start/die event stream terminated"
 }
 
 synchronize_etc_hosts() {
@@ -44,7 +53,9 @@ synchronize_etc_hosts() {
   if [ "$etc_hosts_hash_now" = "$etc_hosts_hash_at_start" ]; then
     sudo cp "$altered_etc_hosts" /etc/hosts
     rm "$altered_etc_hosts"
+    log "Updated /etc/hosts with $etc_host_entries"
   else
+    rm "$altered_etc_hosts"
     synchronize_etc_hosts
   fi
 }
