@@ -8,6 +8,7 @@ main() {
 
   synchronize_etc_hosts_as_containers_start_and_stop &
   synchronize_etc_hosts
+  log "started"
 }
 
 strict() {
@@ -62,6 +63,8 @@ get_etc_host_entries() {
 
   declare -A etc_hosts
 
+  local all_containers; all_containers=$(get_all_containers)
+
   while read -r container_and_ip; do
     IFS='|' read -r compose_project compose_service compose_number name ip_address network_name <<<"$container_and_ip"
 
@@ -81,7 +84,7 @@ get_etc_host_entries() {
         etc_hosts["$sanitised_name"]="$ip_address"
       fi
     fi
-  done < <(get_all_containers)
+  done <<< "$all_containers"
 
   for hostname in "${!etc_hosts[@]}"; do
     echo "${etc_hosts[$hostname]} $hostname"
@@ -90,11 +93,14 @@ get_etc_host_entries() {
 
 get_all_containers() {
   strict
+  local format; format="$(format_template)"
+  local bridge_networks_filter; bridge_networks_filter="$(all_docker_bridge_networks_as_filter)"
+  # we want the filters to be expanded
+  # shellcheck disable=SC2086
+  local running_containers; running_containers="$(docker ps -q $bridge_networks_filter)"
   # we want docker ps -q to be expanded
-  # shellcheck disable=SC2046
-  docker inspect \
-    --format="$(format_template)" \
-    $(docker ps -q $(all_docker_bridge_networks_as_filter)) |
+  # shellcheck disable=SC2086
+  docker inspect --format="$format" $running_containers |
     sed '/^$/d' |
     sort
 }
@@ -172,7 +178,7 @@ all_docker_bridge_networks_as_filter() {
 }
 
 log() {
-  echo "$(date +%Y-%d-%mT%H:%M:%S\ %Z) ~- docker-etc-hosts $1"
+  echo "$(date +%Y-%d-%mT%H:%M:%S\ %Z) docker-etc-hosts $1"
 }
 
 error() {
