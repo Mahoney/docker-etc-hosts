@@ -23,7 +23,7 @@ synchronize_etc_hosts_as_containers_start_and_stop() {
     while read -r _; do
       synchronize_etc_hosts
     done
-  log "docker-etc-hosts exiting - docker container start/die event stream terminated"
+  log "exiting - docker container start/die event stream terminated"
 }
 
 synchronize_etc_hosts() {
@@ -172,7 +172,7 @@ all_docker_bridge_networks_as_filter() {
 }
 
 log() {
-  echo "$(date +%Y-%d-%mT%H:%M:%S\ %Z) $1"
+  echo "$(date +%Y-%d-%mT%H:%M:%S\ %Z) ~- docker-etc-hosts $1"
 }
 
 error() {
