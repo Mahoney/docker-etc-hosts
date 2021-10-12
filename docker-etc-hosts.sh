@@ -1,4 +1,4 @@
-#! /usr/bin/env zsh
+#! /usr/bin/env bash
 
 main() {
   strict
@@ -8,10 +8,6 @@ main() {
 
   synchronize_etc_hosts_as_containers_start_and_stop &
   synchronize_etc_hosts
-}
-
-log() {
-  echo "$(date +%Y-%m-%dT%H:%M:%S%Z) $1"
 }
 
 strict() {
