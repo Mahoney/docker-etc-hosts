@@ -1,8 +1,7 @@
 #! /usr/bin/env zsh
 
 main() {
-  set -euo pipefail
-  IFS=$'\n\t'
+  strict
 
   # Set home so docker doesn't moan
   export HOME="${HOME:-/var/root}"
@@ -15,11 +14,12 @@ log() {
   echo "$(date +%Y-%m-%dT%H:%M:%S%Z) $1"
 }
 
-error() {
-  log >&2 "$1"
+strict() {
+  set -euo pipefail; IFS=$'\n\t'
 }
 
 synchronize_etc_hosts_as_containers_start_and_stop() {
+  strict
   docker events \
     --filter 'type=container' \
     --filter 'event=start' \
@@ -31,6 +31,7 @@ synchronize_etc_hosts_as_containers_start_and_stop() {
 }
 
 synchronize_etc_hosts() {
+  strict
 
   local section_name="added by docker-etc-hosts"
   local section_start="## START $section_name"
@@ -61,6 +62,7 @@ synchronize_etc_hosts() {
 }
 
 get_etc_host_entries() {
+  strict
 
   declare -A etc_hosts
 
@@ -91,6 +93,7 @@ get_etc_host_entries() {
 }
 
 get_all_containers() {
+  strict
   # we want docker ps -q to be expanded
   # shellcheck disable=SC2046
   docker inspect \
@@ -101,6 +104,7 @@ get_all_containers() {
 }
 
 sanitise() {
+  strict
   local sanitised="$1"
 
   shopt -s extglob
@@ -112,6 +116,7 @@ sanitise() {
 }
 
 format_template() {
+  strict
   local name_var; name_var=$(var_exp 'name' '.Name')
 
   local compose_project_var; compose_project_var=$(label_var_default_empty_string 'compose_project' 'com.docker.compose.project')
@@ -131,6 +136,7 @@ format_template() {
 }
 
 join_vars_with_separator() {
+  strict
   local separator=$1
   vars=()
   while IFS='' read -r line; do vars+=("$line"); done < <(surround '{{$' '}}' "${@:2}")
@@ -139,6 +145,7 @@ join_vars_with_separator() {
 }
 
 surround() {
+  strict
   local prefix=$1
   local suffix=$2
   local to_surround=("${@:3}")
@@ -148,12 +155,14 @@ surround() {
 }
 
 var_exp() {
+  strict
   local var_name=$1
   local expr=$2
   echo '{{$'"$var_name"' := '"$expr"'}}'
 }
 
 label_var_default_empty_string() {
+  strict
   local var_name=$1
   local label=$2
   local label_expr="index .Config.Labels \"$label\""
@@ -162,6 +171,7 @@ label_var_default_empty_string() {
 }
 
 all_docker_bridge_networks_as_filter() {
+  strict
   docker network ls --filter 'driver=bridge' --format '--filter=network={{.ID}}'
 }
 
