@@ -21,6 +21,6 @@ manually and copy `docker-etc-hosts.sh` into
 writable by root.
 
 On macOS by default you cannot address containers by IP address - you can
-install [docker-tuntap-osx](https://github.com/Mahoney/docker-tuntap-osx)
+install [docker-tuntap-osx](https://github.com/Mahoney-forks/docker-tuntap-osx)
 via `brew install mahoney/tap/docker-tuntap-osx` to allow addressing containers
 by IP address.
