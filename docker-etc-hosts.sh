@@ -178,7 +178,7 @@ all_docker_bridge_networks_as_filter() {
 }
 
 log() {
-  echo "$(date +%Y-%d-%mT%H:%M:%S\ %Z) docker-etc-hosts $1"
+  echo "$(date +%Y-%m-%dT%H:%M:%S%z) docker-etc-hosts $1"
 }
 
 error() {
