@@ -7,7 +7,7 @@ main() {
   export HOME="${HOME:-/var/root}"
 
   synchronize_etc_hosts_as_containers_start_and_stop &
-  synchronize_etc_hosts
+  synchronize_etc_hosts_safely
   log "started"
 }
 
@@ -22,9 +22,15 @@ synchronize_etc_hosts_as_containers_start_and_stop() {
     --filter 'event=start' \
     --filter 'event=die' |
     while read -r _; do
-      synchronize_etc_hosts
+      synchronize_etc_hosts_safely
     done
   log "exiting - docker container start/die event stream terminated"
+}
+
+synchronize_etc_hosts_safely() {
+  if ! synchronize_etc_hosts; then
+    error "failed to synchronize /etc/hosts with currently running docker containers"
+  fi
 }
 
 synchronize_etc_hosts() {
@@ -63,7 +69,7 @@ get_etc_host_entries() {
 
   declare -A etc_hosts
 
-  local all_containers; all_containers=$(get_all_containers)
+  local all_containers; all_containers=$(get_all_containers_repeat)
 
   while read -r container_and_ip; do
     IFS='|' read -r compose_project compose_service compose_number name ip_address network_name <<<"$container_and_ip"
@@ -89,6 +95,24 @@ get_etc_host_entries() {
   for hostname in "${!etc_hosts[@]}"; do
     echo "${etc_hosts[$hostname]} $hostname"
   done
+}
+
+get_all_containers_repeat() {
+  strict
+
+  local max_attempts=10
+  local attempt=0
+  local all_containers;
+  until [ $attempt -eq $max_attempts ] || all_containers=$(get_all_containers); do
+    attempt=$((attempt+1))
+    sleep 0.2
+  done
+  if [ "$attempt" -eq $max_attempts ]; then
+    error "Failed to get all containers on attempt $attempt"
+    exit 1
+  else
+    echo "$all_containers"
+  fi
 }
 
 get_all_containers() {
