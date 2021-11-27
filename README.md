@@ -24,3 +24,12 @@ On macOS by default you cannot address containers by IP address - you can
 install [docker-tuntap-osx](https://github.com/Mahoney-forks/docker-tuntap-osx)
 via `brew install mahoney/tap/docker-tuntap-osx` to allow addressing containers
 by IP address.
+
+## Releasing
+
+- release a new tag in form x.y.z using the GitHub GUI.
+- Edit `$(brew --repository)/Library/Taps/mahoney/homebrew-tap/Formula/docker-etc-hosts.rb`
+- Change the version in the `url` field
+- Run `brew fetch docker-etc-hosts --build-from-source`
+- Update the sha256 with the reported SHA256
+- Commit with the message `docker-etc-hosts $version` & push
