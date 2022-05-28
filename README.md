@@ -1,3 +1,14 @@
+## WARNING - REQUIRES BASH 5.x
+
+This script depends on bash 5.x, and macOs ships with bash 3.x.
+
+On an M1 Mac homebrew installs bash 5.x into /opt/homebrew/bin, which is not on
+root's `PATH`, so this script fails as it runs as root when run via
+`docker-lifecycle-listener`.
+
+See [Issue 2: Make the script work on an M1 mac](https://github.com/Mahoney/docker-etc-hosts/issues/2)
+for discussion of how to fix this...
+
 docker-etc-hosts
 ================
 docker-etc-hosts is a little service to update /etc/hosts with the names of your
@@ -14,6 +25,10 @@ It works in conjunction with
 
 It can be installed as so: `brew install mahoney/tap/docker-etc-hosts`
 
+You may need to restart `docker-lifecycle-listener` afterwards:
+
+`sudo services restart docker-lifecycle-listener`
+
 On Linux you will need to set up
 [docker-lifecycle-listener](https://github.com/Mahoney/docker-lifecycle-listener)
 manually and copy `docker-etc-hosts.sh` into
@@ -21,8 +36,8 @@ manually and copy `docker-etc-hosts.sh` into
 writable by root.
 
 On macOS by default you cannot address containers by IP address - you can
-install [docker-tuntap-osx](https://github.com/Mahoney-forks/docker-tuntap-osx)
-via `brew install mahoney/tap/docker-tuntap-osx` to allow addressing containers
+install [Docker Mac Net Connect](https://github.com/chipmk/docker-mac-net-connect)
+via `brew install chipmk/tap/docker-mac-net-connect` to allow addressing containers
 by IP address.
 
 ## Releasing
